@@ -1,1 +1,1 @@
-## Job Listing Plateform
+## Job Listing Platform

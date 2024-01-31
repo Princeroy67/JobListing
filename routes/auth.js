@@ -7,52 +7,46 @@ const jwt = require("jsonwebtoken");
 router.post("/register", async (req, res) => {
   try {
     const { name, email, mobile, password } = req.body;
+
     if (!name || !email || !mobile || !password) {
       return res.status(400).json({
-        errorMessage: "Bad Request 😵‍💫",
+        errorMessage: "Bad Request",
       });
     }
-    const isExistingUser = await user.findOne({ email: email });
+    //check for email
+    const isExistingUser = await User.findOne({ email: email });
     if (isExistingUser) {
-      return res.status(409).json({ message: "User already exists 👿" });
+      return res.status(409).json({ message: "Email already exists" });
     }
-    isExistingUser = await user.findOne({ mobile: mobile });
+    // check for mobile
+    isExistingUser = await User.findOne({ mobile: mobile });
     if (isExistingUser) {
-      return res
-        .status(409)
-        .json({ message: "Mobile Number already exists 👿" });
+      return res.status(409).json({ message: "Mobile number already exists" });
     }
-    const hasedPassword = await bcrypt.hashSync(password, 10);
-    //this method is the combination to create and save the data
-    const userResponse = await User.create({
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    /*await User.create({
       name,
       email,
       mobile,
-      password: hasedPassword,
-    });
-    /*
-    another method to create and save data is 
+      password: hashedPassword,
+    });*/
+
     const userData = new User({
       name,
       email,
       mobile,
       password: hashedPassword,
     });
-    userData.save();
-    */
+    const userResponse = userData.save();
+
     const token = await jwt.sign(
-      { userId: userResponse._id },
+      { userId: await userResponse._id },
       process.env.JWT_SECRET
     );
-    res.json({ message: "User registered Sucessfully ✅", token: token });
-  } catch (error) {}
 
-  //valid check
-  //error handling
-  //check if already user exists
-  //write into the database
-  //create model/schema
-  //joi and yup
+    res.json({ message: "User Registered Sucessfully", token: token });
+  } catch (error) {}
 });
 
-module.export = router;
+module.exports = router;

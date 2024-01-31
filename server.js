@@ -2,9 +2,12 @@ require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
+const authRoutes = require("./routes/auth");
+const jobRoutes = require("./routes/jobs");
 
 // Create Server
 const app = express();
+app.use(express.json());
 
 //connect to db
 if (!process.env.MONGODB_URI) {
@@ -24,6 +27,9 @@ app.get("/health", (req, res) => {
     time: new Date(),
   });
 });
+
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/job", jobRoutes);
 
 const PORT = process.env.PORT || 3010;
 app.listen(PORT, () => {

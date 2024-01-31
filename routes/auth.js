@@ -14,7 +14,7 @@ router.post("/register", async (req, res) => {
       });
     }
     //check for email
-    const isExistingUser = await User.findOne({ email: email });
+    let isExistingUser = await User.findOne({ email: email });
     if (isExistingUser) {
       return res.status(409).json({ message: "Email already exists" });
     }
@@ -38,15 +38,53 @@ router.post("/register", async (req, res) => {
       mobile,
       password: hashedPassword,
     });
-    const userResponse = userData.save();
+    const userResponse = await userData.save();
 
     const token = await jwt.sign(
-      { userId: await userResponse._id },
+      { userId: userResponse._id },
       process.env.JWT_SECRET
     );
 
-    res.json({ message: "User Registered Sucessfully", token: token });
-  } catch (error) {}
+    res.json({
+      message: "User Registered Sucessfully",
+      token: token,
+      name: name,
+    });
+  } catch (error) {
+    console.log("Error in signup : ", error);
+  }
+});
+
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({
+        errorMessage: "Bad Request!  Invalid Credentials",
+      });
+    }
+    const userDetails = await User.findOne({ email });
+
+    if (!userDetails) {
+      return res.status(401).json({ errorMessage: "Invalid Credentials" });
+    }
+    const passwordMatch = await bcrypt.compare(password, userDetails.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ errorMessage: "Invalid Credentials" });
+    }
+    const token = await jwt.sign(
+      { userId: userDetails._id },
+      process.env.JWT_SECRET
+    );
+
+    res.json({
+      message: "User loggedIn  Sucessfully",
+      token: token,
+      name: userDetails.name,
+    });
+  } catch (error) {
+    console.log("Error in login : ", error);
+  }
 });
 
 module.exports = router;

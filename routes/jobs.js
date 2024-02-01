@@ -25,4 +25,66 @@ router.post("/create", jwtVerify, async (req, res) => {
   }
 });
 
+//Updating Job
+router.put("/update/:jobId", jwtVerify, async (req, res) => {
+  try {
+    const { companyName, title, description, logoUrl } = req.body;
+    const jobId = req.params.jobId;
+    if (!companyName || !title || !description || !logoUrl || !jobId) {
+      return res.status(400).json({ msg: "Missing fields" });
+    }
+    await Job.updateOne(
+      { _id: jobId },
+      {
+        $set: {
+          companyName,
+          title,
+          description,
+          logoUrl,
+        },
+      }
+    );
+
+    res.json({ message: "Job details updated Sucessfully" });
+  } catch (error) {
+    console.log("Error in Updating Jobs : ", error);
+  }
+});
+
+//Searching Jobs with the help of JobId
+
+router.get("/job-description/:jobId", async (req, res) => {
+  try {
+    const jobId = req.params.jobId;
+    if (!jobId) {
+      return res.status(400).json({ msg: "Missing fields" });
+    }
+    const jobDetails = await Job.findById(jobId, {
+      companyName: 1,
+      title: 1,
+      description: 1,
+      createdAt: 1,
+    });
+    res.json({ data: jobDetails });
+  } catch (error) {
+    console.log("Error in displaying Job details : ", error);
+  }
+});
+
+router.get("/all", async (req, res) => {
+  try {
+    const jobList = await Job.find(
+      {},
+      {
+        companyName: 1,
+        title: 1,
+        description: 1,
+      }
+    );
+    res.json({ data: jobList });
+  } catch (error) {
+    console.log("Error in displaying Jobs : ", error);
+  }
+});
+
 module.exports = router;

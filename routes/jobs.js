@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const Job = require("../models/job");
-router.post("/create", async (req, res) => {
+const jwtVerify = require("../middlewares/authMiddleware");
+
+router.post("/create", jwtVerify, async (req, res) => {
   try {
     const { companyName, title, description, logoUrl } = req.body;
     if (!companyName || !title || !description || !logoUrl) {
@@ -12,6 +14,7 @@ router.post("/create", async (req, res) => {
       title,
       description,
       logoUrl,
+      refUserId: req.body.userId,
     });
 
     await jobDetails.save();

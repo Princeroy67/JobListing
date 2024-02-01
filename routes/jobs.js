@@ -70,11 +70,13 @@ router.get("/job-description/:jobId", async (req, res) => {
     console.log("Error in displaying Job details : ", error);
   }
 });
+//Get all jobs in this route
 
 router.get("/all", async (req, res) => {
   try {
+    const title = req.query.title || " ";
     const jobList = await Job.find(
-      {},
+      { title: { $regex: title, $options: "i" } },
       {
         companyName: 1,
         title: 1,

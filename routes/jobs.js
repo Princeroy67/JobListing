@@ -75,9 +75,17 @@ router.get("/job-description/:jobId", async (req, res) => {
 router.get("/all", async (req, res) => {
   try {
     const title = req.query.title || " ";
-    const skills = req.query.skills || [];
+    const skills = req.query.skills;
+    const filterSkills = skills?.split(",");
+    let filter = {};
+    if (filterSkills) {
+      filter = { skills: { $in: [...filterSkills] } };
+    }
     const jobList = await Job.find(
-      { title: { $regex: title, $options: "i" }, skills: { $in: [...skills] } },
+      {
+        title: { $regex: title, $options: "i" },
+        ...filter,
+      },
       {
         companyName: 1,
         title: 1,
